@@ -31,7 +31,7 @@ public class AnimatedView extends ImageView{
 	private Handler h;
 	// 40 ms between frames.
 	private final int FRAME_RATE = 40;
-	private Fires mExplosions;
+	private Fires mFires;
 
 	private DeathExpSheet mDSprite;
 
@@ -70,7 +70,7 @@ public class AnimatedView extends ImageView{
 		gRect.right = gRect.left + gSprite.width();
 		gRect.bottom = gRect.top + gSprite.height();
 
-		mExplosions = new Fires(mContext);
+		mFires = new Fires(mContext);
 
 		mDSprite = new DeathExpSheet(mContext);
 
@@ -86,7 +86,7 @@ public class AnimatedView extends ImageView{
 		setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View arg0, MotionEvent arg1) {
-				mExplosions.add((int) arg1.getX(), (int) arg1.getY(), mWidth, mHeight);
+				mFires.add((int) arg1.getX(), (int) arg1.getY(), mWidth, mHeight);
 				return true;
 			}
 		});
@@ -114,7 +114,7 @@ public class AnimatedView extends ImageView{
 
 	private void drawGameOverMsg(Canvas c) {
 		// Draw the explosions.
-		mExplosions.draw(c);
+		mFires.draw(c);
 		if (!mDSprite.isDestroyed()) {
 			gRect.offset(xVelocity, yVelocity);
 			UpdateAngle();
@@ -143,20 +143,17 @@ public class AnimatedView extends ImageView{
 			return;
 		}
 		// Check if we hit some explosions and remove them.
-		mHealth -= mExplosions.collide(gRect);
+		mHealth -= mFires.collide(gRect);
 
 		// Change direction to the next explosion.
-		if (mExplosions.size() > 0) {
-			changeV(mExplosions.getX(0), mExplosions.getY(0));
+		if (mFires.size() > 0) {
+			changeV(mFires.getX(0), mFires.getY(0));
 		} else {
 			xVelocity = 0;
 			yVelocity = 0;
 		}
 
 		// If we hit the wall - change direction to the opposite.
-		// TODO: There is a bug here: if we first changed direction to the
-		// explosion and now we are near the wall, here we will change the
-		// direction out of the map and go away! it actually happens.
 		if ((gRect.right >= this.getWidth() && xVelocity > 0) || 
 				(gRect.left <= 0 && xVelocity < 0)) {
 			xVelocity = 0;
@@ -170,9 +167,9 @@ public class AnimatedView extends ImageView{
 		gSprite.draw(c, gRect, angle);
 
 		// Draw the explosions.
-		mExplosions.draw(c);
+		mFires.draw(c);
 
-		// Draw the fuel gauge
+		// Draw the health bar.
 		mScratchRect.set(HEALTH_BAR_X, HEALTH_BAR_Y, 
 				HEALTH_BAR_X + mHealth, HEALTH_BAR_H + 10);
 		c.drawRect(mScratchRect, mLinePaint);
