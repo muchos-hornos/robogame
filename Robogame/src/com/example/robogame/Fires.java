@@ -2,12 +2,12 @@ package com.example.robogame;
 
 import java.util.LinkedList;
 
-import com.example.myfirstapp.R;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+
+import com.example.myfirstapp.R;
 
 public class Fires {
 	public Fires(Context context) {
