@@ -31,7 +31,7 @@ public class AnimatedView extends ImageView{
 	private Handler h;
 	// 40 ms between frames.
 	private final int FRAME_RATE = 40;
-	private Explosions mExplosions;
+	private Fires mExplosions;
 
 	private DeathExpSheet mDSprite;
 
@@ -70,7 +70,7 @@ public class AnimatedView extends ImageView{
 		gRect.right = gRect.left + gSprite.width();
 		gRect.bottom = gRect.top + gSprite.height();
 
-		mExplosions = new Explosions(mContext);
+		mExplosions = new Fires(mContext);
 
 		mDSprite = new DeathExpSheet(mContext);
 

@@ -9,14 +9,35 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 
-public class Explosions {
-	public Explosions(Context context) {
+public class Fires {
+	public Fires(Context context) {
+		// TODO: Atlas.
 		eFrames = new BitmapDrawable[]{ 
-				(BitmapDrawable)context.getResources().getDrawable(R.drawable.explosion1),
-				(BitmapDrawable)context.getResources().getDrawable(R.drawable.explosion2),
-				(BitmapDrawable)context.getResources().getDrawable(R.drawable.explosion3),
-				(BitmapDrawable)context.getResources().getDrawable(R.drawable.explosion4),
-				(BitmapDrawable)context.getResources().getDrawable(R.drawable.explosion5)};
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire01),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire02),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire03),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire04),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire05),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire06),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire07),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire08),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire09),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire10),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire11),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire12),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire13),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire14),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire15),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire16),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire17),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire18),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire19),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire20),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire21),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire22),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire23),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire24),
+				(BitmapDrawable)context.getResources().getDrawable(R.drawable.fire25)};
 
 		mXs = new LinkedList<Integer>();
 		mYs = new LinkedList<Integer>();
