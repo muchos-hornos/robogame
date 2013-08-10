@@ -29,6 +29,8 @@ public class AnimatedView extends ImageView{
 	// Velocity of the guy.
 	private int xVelocity = 15;
 	private int yVelocity = 0;
+	private int mHealth = 100;
+	private HealthBar mBar;
 	// Abs value of the guys velocity.
 	private double absV = Math.sqrt(xVelocity*xVelocity + yVelocity*yVelocity);
 	private Handler h;
@@ -37,15 +39,7 @@ public class AnimatedView extends ImageView{
 	private Fires mFires;
 
 	private DeathExpSheet mDSprite;
-
-
-	/** Paint to draw the lines on screen. */
-	private int mHealth = 100;
-	private final int HEALTH_BAR_X = 4;
-	private final int HEALTH_BAR_Y = 4;
-	private final int HEALTH_BAR_H = 10;
-	private Paint mLinePaint;
-	private RectF mScratchRect;
+	
 	
 	private MediaPlayer mBombPlayer;
 	private boolean  mHasPlayed = false;
@@ -73,16 +67,12 @@ public class AnimatedView extends ImageView{
 		gRect.left = 20;
 		gRect.right = gRect.left + gSprite.maxWidth();
 		gRect.bottom = gRect.top + gSprite.maxHeight();
+		
+		mBar = new HealthBar(mHealth);
 
 		mFires = new Fires(mContext);
 
 		mDSprite = new DeathExpSheet(mContext);
-
-		// Initialize paints for speedometer
-		mLinePaint = new Paint();
-		mLinePaint.setAntiAlias(true);
-		mLinePaint.setARGB(255, 0, 255, 0);
-		mScratchRect = new RectF(0, 0, 0, 0);
 		
 		mBombPlayer = MediaPlayer.create(mContext, R.raw.exp1);
 
@@ -174,9 +164,7 @@ public class AnimatedView extends ImageView{
 		mFires.draw(c);
 
 		// Draw the health bar.
-		mScratchRect.set(HEALTH_BAR_X, HEALTH_BAR_Y, 
-				HEALTH_BAR_X + mHealth, HEALTH_BAR_H + 10);
-		c.drawRect(mScratchRect, mLinePaint);
+		mBar.draw(c, mHealth);
 
 		// Schedule the next frame.
 		h.postDelayed(r, FRAME_RATE);
