@@ -1,5 +1,9 @@
 package com.example.robogame;
 
+import java.io.IOException;
+
+import org.json.JSONException;
+
 import com.example.myfirstapp.R;
 
 import android.content.Context;
@@ -20,8 +24,7 @@ public class AnimatedView extends ImageView{
 	private int mHeight;
 	// (x,y) of the guy.
 	Rect gRect;
-	RobotSpriteFactory gFactory;
-	RobotSpriteSheet gSprite;
+	AtlasSprite gSprite;
 	private double angle;
 	// Velocity of the guy.
 	private int xVelocity = 15;
@@ -56,19 +59,20 @@ public class AnimatedView extends ImageView{
 	};
 
 
-	public AnimatedView(Context context, AttributeSet attrs)  {
+	public AnimatedView(Context context, AttributeSet attrs) 
+			throws IOException, JSONException  {
 		super(context, attrs);
 		mContext = context;
 		h = new Handler();
 		// Init the guy.
+		// TODO: A class for it?
 		gRect = new Rect();
 		angle = 0;
-		gFactory = new RobotSpriteFactory(mContext);
-		gSprite = gFactory.getNew();
+		gSprite = new AtlasSprite(mContext, R.raw.robo, R.raw.robo_js);
 		gRect.top = 20;
 		gRect.left = 20;
-		gRect.right = gRect.left + gSprite.width();
-		gRect.bottom = gRect.top + gSprite.height();
+		gRect.right = gRect.left + gSprite.maxWidth();
+		gRect.bottom = gRect.top + gSprite.maxHeight();
 
 		mFires = new Fires(mContext);
 
@@ -118,11 +122,11 @@ public class AnimatedView extends ImageView{
 		if (!mDSprite.isDestroyed()) {
 			gRect.offset(xVelocity, yVelocity);
 			UpdateAngle();
-			gSprite.draw(c, gRect, angle);
+			gSprite.draw(c, gRect.left, gRect.top, angle);
 		}
 		mDSprite.draw(c, gRect, angle);
 
-		if (mDSprite.isDead()) {
+		if (mDSprite.isOver()) {
 			Paint paint = new Paint(); 
 			paint.setColor(Color.RED); 
 			paint.setTextSize(40); 
@@ -164,7 +168,7 @@ public class AnimatedView extends ImageView{
 		}
 		gRect.offset(xVelocity, yVelocity);
 		UpdateAngle();
-		gSprite.draw(c, gRect, angle);
+		gSprite.draw(c, gRect.left, gRect.top, angle);
 
 		// Draw the explosions.
 		mFires.draw(c);
