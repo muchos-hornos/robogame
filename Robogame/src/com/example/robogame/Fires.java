@@ -15,27 +15,27 @@ public class Fires {
 	public Fires(Context context) throws IOException, JSONException {
 		mSprite = new AtlasSprite(context, R.raw.fireatlas, 
 				R.raw.fireatlas_js);
-		
+
 		mXs = new LinkedList<Integer>();
 		mYs = new LinkedList<Integer>();
 		mFids = new LinkedList<Integer>();
 
 		mWidth = mSprite.maxWidth();
 		mHeight = mSprite.maxHeight();
+		mRect = new Rect(0, 0, mWidth, mHeight);
 	}
 
-	void add(int x, int y, int canvasW, int canvasH) {
-		int dstX = x;
-		int dstY = y;
-		if (x + mWidth > canvasW) {
-			dstX = canvasW - mWidth;
+	void add(int x, int y, LinkedList<Wall> walls) {
+		// Do not add fires on walls.
+		for (Wall wall : walls) {
+			mRect.offsetTo(x, y);
+			if (Rect.intersects(mRect, wall.rect())) {
+				return;
+			}
+			mXs.add(x);
+			mYs.add(y);
+			mFids.add(0);
 		}
-		if (y + mHeight > canvasH) {
-			dstY = canvasH - mHeight;
-		}
-		mXs.add(dstX);
-		mYs.add(dstY);
-		mFids.add(0);
 	}
 
 	void remove(int idx) {
@@ -94,4 +94,5 @@ public class Fires {
 	// Explosions' size.
 	private int mWidth;
 	private int mHeight;
+	private Rect mRect;
 }

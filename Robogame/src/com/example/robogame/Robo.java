@@ -61,11 +61,10 @@ public class Robo {
 		mVY = vy;
 	}
 
-	void checkStatic(LinkedList<Rect> walls) {
-		boolean was_stopped = mVX == 0 && mVY == 0;
-		for (Rect wall : walls) {
+	void checkStatic(LinkedList<Wall> mWalls) {
+		for (Wall wall : mWalls) {
 			mScratch.set(mRect);
-			if (mScratch.intersect(wall)) {
+			if (mScratch.intersect(wall.rect())) {
 				if (mScratch.width() < mScratch.height()) {
 					// Only zero the VX if we are moving towards the wall.
 					if ((mScratch.centerX() - mRect.centerX()) * mVX > 0) {

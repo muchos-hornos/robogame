@@ -11,8 +11,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -21,12 +19,13 @@ import android.view.View;
 import android.widget.ImageView;
 public class AnimatedView extends ImageView{
 	private Context mContext;
-	private Rect mTopWall;
-	private Rect mLeftWall;
-	private Rect mRightWall;
-	private Rect mBottomWall;
-	LinkedList<Rect> mWalls;
-
+	private Wall mTopWall;
+	private Wall mLeftWall;
+	private Wall mRightWall;
+	private Wall mBottomWall;
+	LinkedList<Wall> mWalls;
+	LinkedList<Wall> mDrawWalls;
+	LinkedList<Wall> mAllWalls;
 	private Handler h;
 	// 40 ms between frames.
 	private final int FRAME_RATE = 40;
@@ -52,7 +51,9 @@ public class AnimatedView extends ImageView{
 		mContext = context;
 		h = new Handler();
 
-		mWalls = new LinkedList<Rect>();
+		mWalls = new LinkedList<Wall>();
+		mDrawWalls = new LinkedList<Wall>();
+		mAllWalls = new LinkedList<Wall>();
 
 		mRobo = new Robo(context);
 
@@ -65,7 +66,7 @@ public class AnimatedView extends ImageView{
 			@Override
 			public boolean onTouch(View arg0, MotionEvent arg1) {
 				mFires.add((int) arg1.getX(), (int) arg1.getY(), 
-						mTopWall.width(), mLeftWall.height());
+						mAllWalls);
 				return true;
 			}
 		});
@@ -73,16 +74,21 @@ public class AnimatedView extends ImageView{
 
 	private void initWalls() {
 		final int depth = 1000;
-		mTopWall = new Rect(0, -depth, this.getWidth(), 0);
-		mLeftWall = new Rect(-depth, 0, 0, this.getHeight());
-		mRightWall = new Rect(this.getWidth(), 0,
+		mTopWall = new Wall(0, -depth, this.getWidth(), 0);
+		mLeftWall = new Wall(-depth, 0, 0, this.getHeight());
+		mRightWall = new Wall(this.getWidth(), 0,
 				this.getWidth() + depth, this.getHeight());
-		mBottomWall = new Rect(0, this.getHeight(), 
+		mBottomWall = new Wall(0, this.getHeight(), 
 				this.getWidth(), this.getHeight() + depth);
 		mWalls.add(mTopWall);
 		mWalls.add(mLeftWall);
 		mWalls.add(mRightWall);
 		mWalls.add(mBottomWall);
+		
+		mDrawWalls.add(new Wall(400, 400, 100, 200));
+		
+		mAllWalls.addAll(mDrawWalls);
+		mAllWalls.addAll(mWalls);
 	}
 
 	private void drawGameOver(Canvas c) {
@@ -108,7 +114,7 @@ public class AnimatedView extends ImageView{
 			}
 		}
 		// Update velocity, in case we hit something.
-		mRobo.checkStatic(mWalls);
+		mRobo.checkStatic(mAllWalls);
 		mRobo.move();
 	}
 
@@ -117,6 +123,9 @@ public class AnimatedView extends ImageView{
 			initWalls();
 		}
 		updatePhysics();
+		for (Wall wall : mDrawWalls) {
+			wall.draw(c);
+		}
 		mRobo.draw(c);
 		mFires.draw(c);
 		if (!mRobo.isAlive()) {
