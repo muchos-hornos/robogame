@@ -31,7 +31,7 @@ public class DeathExpSheet {
 	}
 
 	public boolean isOver() {
-		return mFid >= mSprite.size();
+		return mFid == mSprite.size();
 	}
 
 	private AtlasSprite mSprite;

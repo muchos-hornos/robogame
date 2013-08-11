@@ -11,7 +11,7 @@ import com.example.myfirstapp.R;
 public class MainActivity extends Activity {
 
 	public final static String EXTRA_MESSAGE = 
-			"com.example.myfirstapp.MESSAGE";
+			"com.example.robogame.MESSAGE";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

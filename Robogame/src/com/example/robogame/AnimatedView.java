@@ -1,6 +1,7 @@
 package com.example.robogame;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import org.json.JSONException;
 
@@ -20,27 +21,19 @@ import android.view.View;
 import android.widget.ImageView;
 public class AnimatedView extends ImageView{
 	private Context mContext;
-	private int mWidth;
-	private int mHeight;
-	// (x,y) of the guy.
-	Rect gRect;
-	AtlasSprite gSprite;
-	private double angle;
-	// Velocity of the guy.
-	private int xVelocity = 15;
-	private int yVelocity = 0;
-	private int mHealth = 100;
-	private HealthBar mBar;
-	// Abs value of the guys velocity.
-	private double absV = Math.sqrt(xVelocity*xVelocity + yVelocity*yVelocity);
+	private Rect mTopWall;
+	private Rect mLeftWall;
+	private Rect mRightWall;
+	private Rect mBottomWall;
+	LinkedList<Rect> mWalls;
+
 	private Handler h;
 	// 40 ms between frames.
 	private final int FRAME_RATE = 40;
+
+	Robo mRobo;
 	private Fires mFires;
 
-	private DeathExpSheet mDSprite;
-	
-	
 	private MediaPlayer mBombPlayer;
 	private boolean  mHasPlayed = false;
 
@@ -58,114 +51,83 @@ public class AnimatedView extends ImageView{
 		super(context, attrs);
 		mContext = context;
 		h = new Handler();
-		// Init the guy.
-		// TODO: A class for it?
-		gRect = new Rect();
-		angle = 0;
-		gSprite = new AtlasSprite(mContext, R.raw.robo, R.raw.robo_js);
-		gRect.top = 20;
-		gRect.left = 20;
-		gRect.right = gRect.left + gSprite.maxWidth();
-		gRect.bottom = gRect.top + gSprite.maxHeight();
-		
-		mBar = new HealthBar(mHealth);
+
+		mWalls = new LinkedList<Rect>();
+
+		mRobo = new Robo(context);
 
 		mFires = new Fires(mContext);
 
-		mDSprite = new DeathExpSheet(mContext);
-		
 		mBombPlayer = MediaPlayer.create(mContext, R.raw.exp1);
 
-		// On touch we add an explosion.
+		// On touch we add a fire.
 		setOnTouchListener(new View.OnTouchListener() {
 			@Override
 			public boolean onTouch(View arg0, MotionEvent arg1) {
-				mFires.add((int) arg1.getX(), (int) arg1.getY(), mWidth, mHeight);
+				mFires.add((int) arg1.getX(), (int) arg1.getY(), 
+						mTopWall.width(), mLeftWall.height());
 				return true;
 			}
 		});
 	}
 
-	// Change the guy's velocity to point to the given direction,
-	// while leaving velocity's abs value the same.
-	private void changeV(int newX, int newY) {
-		int dX = newX - gRect.left;
-		int dY = newY - gRect.top;
-		double absDV = Math.sqrt(dX*dX + dY*dY);
-		xVelocity = (int) (absV * (dX / absDV));
-		yVelocity = (int) (absV * (dY / absDV));
+	private void initWalls() {
+		final int depth = 1000;
+		mTopWall = new Rect(0, -depth, this.getWidth(), 0);
+		mLeftWall = new Rect(-depth, 0, 0, this.getHeight());
+		mRightWall = new Rect(this.getWidth(), 0,
+				this.getWidth() + depth, this.getHeight());
+		mBottomWall = new Rect(0, this.getHeight(), 
+				this.getWidth(), this.getHeight() + depth);
+		mWalls.add(mTopWall);
+		mWalls.add(mLeftWall);
+		mWalls.add(mRightWall);
+		mWalls.add(mBottomWall);
 	}
 
-	private void UpdateAngle() {
-		if (xVelocity == 0 && yVelocity == 0) {
-			return;
-		}
-		angle = Math.toDegrees(Math.acos(xVelocity / absV));
-		if (yVelocity < 0) {
-			angle *= -1;
-		}
+	private void drawGameOver(Canvas c) {
+		Paint paint = new Paint(); 
+		paint.setColor(Color.RED); 
+		paint.setTextSize(40); 
+		c.drawText("Game Over", this.getWidth()/3, this.getHeight()/2, paint); 
 	}
 
-	private void drawGameOverMsg(Canvas c) {
-		// Draw the explosions.
-		mFires.draw(c);
-		if (!mDSprite.isDestroyed()) {
-			gRect.offset(xVelocity, yVelocity);
-			UpdateAngle();
-			gSprite.draw(c, gRect.left, gRect.top, angle);
-		}
-		mDSprite.draw(c, gRect, angle);
+	private void updatePhysics() {
+		if (mRobo.isAlive()) {
+			// Check if we hit some explosions, remove them and
+			// update health.
+			mRobo.incHealth(-mFires.collide(mRobo.rect()));
 
-		if (mDSprite.isOver()) {
-			Paint paint = new Paint(); 
-			paint.setColor(Color.RED); 
-			paint.setTextSize(40); 
-			c.drawText("Game Over", this.getWidth()/3, this.getHeight()/2, paint); 
+			if (mFires.size() > 0) {
+				// Change direction to the next fire.
+				mRobo.headTo(mFires.getX(0), mFires.getY(0));
+			} else {
+				// If no fires, stop.
+				mRobo.set_vx(0);
+				mRobo.set_vy(0);
+			}
 		}
-		h.postDelayed(r, FRAME_RATE);
+		// Update velocity, in case we hit something.
+		mRobo.checkStatic(mWalls);
+		mRobo.move();
 	}
 
 	protected void onDraw(Canvas c) {
-		mWidth = this.getWidth();
-		mHeight = this.getHeight();
-		if (mHealth <= 0) {
-			drawGameOverMsg(c);
+		if (mWalls.size() == 0) {
+			initWalls();
+		}
+		updatePhysics();
+		mRobo.draw(c);
+		mFires.draw(c);
+		if (!mRobo.isAlive()) {
+			if (mRobo.isOver()) {
+				drawGameOver(c);
+			}
 			if (!mHasPlayed) {
 				mBombPlayer.start();
 				mHasPlayed = true;
 			}
-			return;
-		}
-		// Check if we hit some explosions and remove them.
-		mHealth -= mFires.collide(gRect);
-
-		// Change direction to the next explosion.
-		if (mFires.size() > 0) {
-			changeV(mFires.getX(0), mFires.getY(0));
-		} else {
-			xVelocity = 0;
-			yVelocity = 0;
-		}
-
-		// If we hit the wall - change direction to the opposite.
-		if ((gRect.right >= this.getWidth() && xVelocity > 0) || 
-				(gRect.left <= 0 && xVelocity < 0)) {
-			xVelocity = 0;
-		}
-		if ((gRect.bottom >= this.getHeight() && yVelocity > 0) || 
-				(gRect.top <= 0 && yVelocity < 0)) {
-			yVelocity = 0;
-		}
-		gRect.offset(xVelocity, yVelocity);
-		UpdateAngle();
-		gSprite.draw(c, gRect.left, gRect.top, angle);
-
-		// Draw the explosions.
-		mFires.draw(c);
-
-		// Draw the health bar.
-		mBar.draw(c, mHealth);
-
+		} 
 		// Schedule the next frame.
 		h.postDelayed(r, FRAME_RATE);
 	}
