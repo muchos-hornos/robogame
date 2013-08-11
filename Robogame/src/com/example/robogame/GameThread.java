@@ -18,7 +18,7 @@ import android.view.SurfaceHolder;
  */
 public class GameThread extends Thread {
 	/** 40ms between frames. */
-	private static int FRAME_RATE = 50;
+	private static int FRAME_RATE = 40;
 	/** For resources and app stuff. */
 	private Context mContext;
 	/**  For drawing on surface. */
