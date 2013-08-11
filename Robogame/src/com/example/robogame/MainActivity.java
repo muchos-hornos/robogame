@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
-import com.example.myfirstapp.R;
+import com.example.robogame.R;
 
 public class MainActivity extends Activity {
 

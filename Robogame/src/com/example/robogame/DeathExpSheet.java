@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.json.JSONException;
 
-import com.example.myfirstapp.R;
+import com.example.robogame.R;
 
 import android.content.Context;
 import android.graphics.Canvas;

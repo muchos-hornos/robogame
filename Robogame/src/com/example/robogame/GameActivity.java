@@ -1,6 +1,6 @@
 package com.example.robogame;
 
-import com.example.myfirstapp.R;
+import com.example.robogame.R;
 
 import android.os.Bundle;
 import android.app.Activity;

@@ -8,8 +8,9 @@ import org.json.JSONException;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 
-import com.example.myfirstapp.R;
+import com.example.robogame.R;
 
 public class Robo {
 	private static int INIT_X = 200;
@@ -26,6 +27,7 @@ public class Robo {
 		mRect.right = mRect.left + mSprite.maxWidth();
 		mRect.bottom = mRect.top + mSprite.maxHeight();
 		mBar = new HealthBar(mHealth);
+		mBombPlayer = MediaPlayer.create(context, R.raw.exp1);
 	}
 
 	// Change the guy's velocity to point to the given direction,
@@ -98,6 +100,11 @@ public class Robo {
 			}
 			// Draw the explosion.
 			mDSprite.draw(c, mRect, 0);
+			// TODO: Find a better place for this.
+			if (!mHasPlayed) {
+				mBombPlayer.start();
+				mHasPlayed = true;
+			}
 		} else {
 			mSprite.draw(c, mRect.left, mRect.top, mAngle);
 			mBar.draw(c, mHealth);
@@ -128,8 +135,12 @@ public class Robo {
 	// Velocity of the guy.
 	private int mVX = 0;
 	private int mVY = 0;
-	private int mHealth = 100;
+	private int mHealth = 400;
 	private HealthBar mBar;
 	// Abs value of the guys velocity.
 	private final double mABSV = 15;
+	
+	/**  For audio.*/
+	private MediaPlayer mBombPlayer;
+	private boolean  mHasPlayed = false;
 }

@@ -15,7 +15,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
+// Reads packed sprites from res/raw. Draws on canvas, can
+// handle frame idx.
 public class AtlasSprite {
+	// imgRid - resource id of sprites' raw image file.
+	// jsonRid - resource id of corresponding json raw file with
+	// sprites' meta info.
 	public AtlasSprite(Context context, int imgRid, int jsonRid) 
 			throws IOException, JSONException {
 		mBitmap = ReadRawToBitMap(context, imgRid);
@@ -37,11 +42,13 @@ public class AtlasSprite {
 	private static String FRAMES = "frames";
 	private static String RECT = "frame";
 	
+	// read raw file as bitmap.
 	static Bitmap ReadRawToBitMap(Context context, int rid) {
 		InputStream stream = context.getResources().openRawResource(rid);
 		return BitmapFactory.decodeStream(stream);
 	}
 
+	// Read raw file as string.
 	static String ReadRawToStr(Context context, int rid) throws IOException {
 		InputStream stream = context.getResources().openRawResource(rid);
 		BufferedReader reader = 
@@ -56,9 +63,10 @@ public class AtlasSprite {
 		return sb.toString();
 	}
 
-	static public Rect[] GetFrames(Context context, int rid) 
+	// Read json meta file, create a rect for each frame.
+	static public Rect[] GetFrames(Context context, int jsonRid) 
 			throws IOException, JSONException {
-		String content = ReadRawToStr(context, rid);
+		String content = ReadRawToStr(context, jsonRid);
 		JSONObject root = new JSONObject(content);
 		JSONArray jFrames = root.getJSONArray(FRAMES);
 		Rect[] frames = new Rect[jFrames.length()];

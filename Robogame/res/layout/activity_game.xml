@@ -6,7 +6,7 @@
     android:background="#000000"
     tools:context=".GameActivity" >
 
-	<com.example.robogame.AnimatedView
+	<com.example.robogame.GameView
 	    android:id="@+id/anim_view"
 	    android:layout_width="fill_parent"
     	android:layout_height="fill_parent" />

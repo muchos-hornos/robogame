@@ -9,7 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 
-import com.example.myfirstapp.R;
+import com.example.robogame.R;
 
 public class Fires {
 	public Fires(Context context) throws IOException, JSONException {
@@ -25,27 +25,27 @@ public class Fires {
 		mRect = new Rect(0, 0, mWidth, mHeight);
 	}
 
-	void add(int x, int y, LinkedList<Wall> walls) {
+	synchronized void add(int x, int y, LinkedList<Wall> walls) {
 		// Do not add fires on walls.
 		for (Wall wall : walls) {
 			mRect.offsetTo(x, y);
 			if (Rect.intersects(mRect, wall.rect())) {
 				return;
 			}
-			mXs.add(x);
-			mYs.add(y);
-			mFids.add(0);
 		}
+		mXs.add(x);
+		mYs.add(y);
+		mFids.add(0);
 	}
 
-	void remove(int idx) {
+	synchronized void remove(int idx) {
 		mXs.remove(idx);
 		mYs.remove(idx);
 		mFids.remove(idx);
 	}
 
 	// Returns number of collisions.
-	public int collide(Rect guy) {
+	synchronized public int collide(Rect guy) {
 		int i = 0;
 		int count = 0;
 		while (i < mXs.size()) {
@@ -61,19 +61,19 @@ public class Fires {
 		return count;
 	}
 
-	public int size() {
+	synchronized public int size() {
 		return mXs.size();
 	}
 
-	public int getX(int idx) {
+	synchronized public int getX(int idx) {
 		return mXs.get(idx);
 	}
 
-	public int getY(int idx) {
+	synchronized public int getY(int idx) {
 		return mYs.get(idx);
 	}
 
-	public void draw(Canvas c) {
+	synchronized public void draw(Canvas c) {
 		int i = 0;
 		for (i = 0; i < mXs.size(); i++) {
 			int fid = mFids.get(i);
