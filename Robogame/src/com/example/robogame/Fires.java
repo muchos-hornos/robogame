@@ -45,13 +45,13 @@ public class Fires {
 	}
 
 	// Returns number of collisions.
-	synchronized public int collide(Rect guy) {
+	synchronized public int collide(Robo robo) {
 		int i = 0;
 		int count = 0;
 		while (i < mXs.size()) {
 			int x = mXs.get(i);
 			int y = mYs.get(i);
-			if (guy.intersects(x, y, x + mWidth, y + mHeight)) {
+			if (robo.intersects(x, y)) {
 				remove(i);
 				count++;
 			} else {

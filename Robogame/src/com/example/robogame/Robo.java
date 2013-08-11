@@ -7,6 +7,7 @@ import org.json.JSONException;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 
@@ -63,7 +64,10 @@ public class Robo {
 		mVY = vy;
 	}
 
-	void checkStatic(LinkedList<Wall> mWalls) {
+	// Returns hit walls in 'hits' and zeroes appropriate v on hit.
+	// If no hit does nothing.
+	// TODO: do updateAngle explicitly.
+	void checkStatic(LinkedList<Wall> mWalls, LinkedList<Wall> hits) {
 		for (Wall wall : mWalls) {
 			mScratch.set(mRect);
 			if (mScratch.intersect(wall.rect())) {
@@ -71,16 +75,22 @@ public class Robo {
 					// Only zero the VX if we are moving towards the wall.
 					if ((mScratch.centerX() - mRect.centerX()) * mVX > 0) {
 						set_vx(0);
+						hits.add(wall);
 					}
 				} else {
 					// Only zero the VY if we are moving towards the wall.
 					if((mScratch.centerY() - mRect.centerY()) * mVY > 0) {
 						set_vy(0);
+						hits.add(wall);
 					}
 				}
 			}
 		}
-		updateAngle();
+	}
+	
+	public void avoidStatic(LinkedList<Wall> mAllWalls) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	public void move() {
@@ -92,6 +102,7 @@ public class Robo {
 	}
 
 	public void draw(Canvas c) {
+		updateAngle();
 		if (mHealth <= 0) {
 			// Draw death animation.
 			if (!mDSprite.isDestroyed()) {
@@ -113,6 +124,15 @@ public class Robo {
 
 	public Rect rect() {
 		return mRect;
+	}
+	
+	public boolean intersects(int x, int y) {
+		mScratch.left = x;
+		mScratch.top = y;
+		// To avoid tunelling.
+		mScratch.right = x + 40;
+		mScratch.bottom = y + 40;
+		return Rect.intersects(mRect, mScratch);
 	}
 
 	public boolean isAlive() {

@@ -9,6 +9,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.SurfaceHolder;
 
 /**
@@ -51,6 +53,12 @@ public class GameThread extends Thread {
 	LinkedList<Wall> mDrawWalls;
 	LinkedList<Wall> mAllWalls;
 
+	// Scratch list for hit walls.
+	LinkedList<Wall> mHitList;
+
+	/** Ordered list of destination points. */
+	Route mRoute;
+
 	public GameThread(SurfaceHolder surfaceHolder, Context context)
 			throws IOException, JSONException {
 		mSurfaceHolder = surfaceHolder;
@@ -59,9 +67,13 @@ public class GameThread extends Thread {
 		mWalls = new LinkedList<Wall>();
 		mDrawWalls = new LinkedList<Wall>();
 		mAllWalls = new LinkedList<Wall>();
+		
+		mHitList = new LinkedList<Wall>();
 
 		mRobo = new Robo(mContext);
 		mFires = new Fires(mContext);
+
+		mRoute = new Route();
 	}
 
 	/**
@@ -166,20 +178,36 @@ public class GameThread extends Thread {
 		if (mRobo.isAlive()) {
 			// Check if we hit some explosions, remove them and
 			// update health.
-			mRobo.incHealth(-mFires.collide(mRobo.rect()));
+			mRobo.incHealth(-mFires.collide(mRobo));
+			chooseDestination();
+		}
+		// Update velocity, in case we hit something.
+		// TODO: not using hitList currently.
+		mHitList.clear();
+		mRobo.checkStatic(mAllWalls, mHitList);
+		mRobo.move();
+	}
 
-			if (mFires.size() > 0) {
-				// Change direction to the next fire.
-				mRobo.headTo(mFires.getX(0), mFires.getY(0));
+	void chooseDestination() {
+		if (mRoute.size() == 0) {
+			if (mFires.size() > 0 ) {
+				final int fX = mFires.getX(0);
+				final int fY = mFires.getY(0);
+				mRoute.push(fX, fY);
 			} else {
-				// If no fires, stop.
+				// If no destinations, stop.
 				mRobo.set_vx(0);
 				mRobo.set_vy(0);
 			}
+			return;
+		} 
+		Point dst = mRoute.peek();
+		if (mRobo.intersects(dst.x, dst.y)) {
+			mRoute.pop();
+			return;
 		}
-		// Update velocity, in case we hit something.
-		mRobo.checkStatic(mAllWalls);
-		mRobo.move();
+
+		mRobo.headTo(dst.x, dst.y);
 	}
 
 	private void draw(Canvas c) {
