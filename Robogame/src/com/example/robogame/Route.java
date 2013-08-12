@@ -1,6 +1,7 @@
 package com.example.robogame;
 
 import android.graphics.Point;
+import android.util.Log;
 
 /** Ordered list of points. 
  * Fixed size, when full throws oldest point on add.
@@ -19,6 +20,7 @@ public class Route {
 		mPoints[mWriteIndex % mPoints.length].x = x;
 		mPoints[mWriteIndex % mPoints.length].y = y;
 		mWriteIndex++;
+		Log.d("ROUTE", "New point to x: " + x + " y: " + y + " size: " + size());
 	}
 	
 	public Point pop() {

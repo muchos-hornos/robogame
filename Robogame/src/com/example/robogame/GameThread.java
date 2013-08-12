@@ -3,6 +3,8 @@ package com.example.robogame;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import junit.framework.Assert;
+
 import org.json.JSONException;
 
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 /**
@@ -20,7 +23,8 @@ import android.view.SurfaceHolder;
  */
 public class GameThread extends Thread {
 	/** 40ms between frames. */
-	private static int FRAME_RATE = 40;
+	private static final int FRAME_RATE = 40;
+	private static final int DETOUR_PADDING = 2;
 	/** For resources and app stuff. */
 	private Context mContext;
 	/**  For drawing on surface. */
@@ -58,6 +62,8 @@ public class GameThread extends Thread {
 
 	/** Ordered list of destination points. */
 	Route mRoute;
+	/** Current destination point. */
+	Point mDst;
 
 	public GameThread(SurfaceHolder surfaceHolder, Context context)
 			throws IOException, JSONException {
@@ -67,13 +73,14 @@ public class GameThread extends Thread {
 		mWalls = new LinkedList<Wall>();
 		mDrawWalls = new LinkedList<Wall>();
 		mAllWalls = new LinkedList<Wall>();
-		
+
 		mHitList = new LinkedList<Wall>();
 
 		mRobo = new Robo(mContext);
 		mFires = new Fires(mContext);
 
 		mRoute = new Route();
+		mDst = new Point(-1, -1);
 	}
 
 	/**
@@ -181,12 +188,20 @@ public class GameThread extends Thread {
 			mRobo.incHealth(-mFires.collide(mRobo));
 			chooseDestination();
 		}
+
 		// Update velocity, in case we hit something.
-		// TODO: not using hitList currently.
 		mHitList.clear();
 		mRobo.checkStatic(mAllWalls, mHitList);
+		// Check if we are stuck because of walls.
+		if ((mRobo.vx() == 0 && mRobo.vy() == 0) && mHitList.size() > 0) {
+			addDetour(mHitList);
+		}
 		mRobo.move();
 	}
+
+	//	boolean shouldDetour(LinkedList<Wall> hitWalls) {
+	//		if(hitWalls.size() == 0 || )
+	//	}
 
 	void chooseDestination() {
 		if (mRoute.size() == 0) {
@@ -200,14 +215,101 @@ public class GameThread extends Thread {
 				mRobo.set_vy(0);
 			}
 			return;
-		} 
+		}
+
 		Point dst = mRoute.peek();
 		if (mRobo.intersects(dst.x, dst.y)) {
 			mRoute.pop();
+			// We will update direction in next frame.
 			return;
 		}
-
+		if (mDst.x != dst.x || mDst.y != dst.y) {
+			mDst.set(dst.x, dst.y);
+			Log.d("ROBO", "Heading to x: " + dst.x + " y: " + dst.y);
+		}
 		mRobo.headTo(dst.x, dst.y);
+	}
+
+	/** Updates mRoute with detour points. */
+	private void addDetour(LinkedList<Wall> hitWalls) {
+		Assert.assertTrue("Stuck with no hitwalls!", hitWalls.size() != 0);
+		Assert.assertTrue("Stuck with empty Route!", mRoute.size() != 0);
+		Assert.assertTrue("Robo not stuck!", mRobo.vx() == 0 && mRobo.vy() == 0);
+
+		Wall w = hitWalls.get(0);
+		Point dst = mRoute.peek();
+		// Check where robo would go if there were no walls.
+		// TODO: checking method.
+		mRobo.headTo(dst.x, dst.y);
+		int vx = mRobo.vx();
+		int vy = mRobo.vy();
+		// Restore speed.
+		mRobo.set_vx(0);
+		mRobo.set_vy(0);
+
+		Assert.assertFalse("No distance!", vx == 0 && vy == 0);
+
+		if (vx == 0 && vy > 0) {
+			addTopBottomDetour(w.rect(), mRobo.rect(), mRoute);
+		} else if(vx == 0 && vy < 0) {
+			addBottomTopDetour(w.rect(), mRobo.rect(), mRoute);
+		} else if(vy == 0 && vx < 0) {
+			addRightLeftDetour(w.rect(), mRobo.rect(), mRoute);
+		} else if(vy == 0 && vx > 0) {
+			addLeftRightDetour(w.rect(), mRobo.rect(), mRoute);
+		} else {
+			Assert.assertTrue("Failed to detour", false);
+		}
+	}
+
+	void addTopBottomDetour(Rect wall, Rect actor, Route r) {
+		Log.d("ROBO", "add Top Bottom Detour");
+		if (Math.abs(wall.left - actor.left)  < 
+				Math.abs(wall.right - actor.right)) {
+			// Go through left corner.
+			r.push(wall.left - actor.width() * DETOUR_PADDING, 
+					wall.bottom + actor.height());
+		} else {
+			// Go through right corner.
+			r.push(wall.right + actor.width() * DETOUR_PADDING, 
+					wall.bottom + actor.height());
+		}
+	}
+
+	void addBottomTopDetour(Rect wall, Rect actor, Route r) {
+		Log.d("ROBO", "add Bottom Top Detour");
+		if (Math.abs(wall.left - actor.left)  < 
+				Math.abs(wall.right - actor.right)) {
+			r.push(wall.left - actor.width() * DETOUR_PADDING,
+					wall.top - actor.height());
+		} else {
+			r.push(wall.right + actor.width() * DETOUR_PADDING,
+					wall.top - actor.height());
+		}
+	}
+
+	void addRightLeftDetour(Rect wall, Rect actor, Route r) {
+		Log.d("ROBO", "add Right Left Detour");
+		if (Math.abs(wall.top - actor.top)  < 
+				Math.abs(wall.bottom - actor.bottom)) {
+			r.push(wall.left - actor.width(),
+					wall.top - actor.height() * DETOUR_PADDING); 
+		} else {
+			r.push(wall.left - actor.width(),
+					wall.bottom + actor.height() * DETOUR_PADDING); 
+		}
+	}
+
+	void addLeftRightDetour(Rect wall, Rect actor, Route r) {
+		Log.d("ROBO", "add Left Right Detour");
+		if (Math.abs(wall.top - actor.top)  < 
+				Math.abs(wall.bottom - actor.bottom)) {
+			r.push(wall.right + actor.width(), 
+					wall.top - actor.height() * DETOUR_PADDING);	
+		} else {
+			r.push(wall.right + actor.width(), 
+					wall.bottom + actor.height() * DETOUR_PADDING);	
+		}
 	}
 
 	private void draw(Canvas c) {

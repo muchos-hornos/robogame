@@ -7,11 +7,9 @@ import org.json.JSONException;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
-
-import com.example.robogame.R;
+import android.util.Log;
 
 public class Robo {
 	private static int INIT_X = 200;
@@ -64,11 +62,11 @@ public class Robo {
 		mVY = vy;
 	}
 
-	// Returns hit walls in 'hits' and zeroes appropriate v on hit.
-	// If no hit does nothing.
-	// TODO: do updateAngle explicitly.
-	void checkStatic(LinkedList<Wall> mWalls, LinkedList<Wall> hits) {
-		for (Wall wall : mWalls) {
+	/** Checks if robo hit walls and zeroes appropriate v on hit.
+	 * If no hit does nothing.
+	 */
+	void checkStatic(LinkedList<Wall> walls, LinkedList<Wall> hits) {
+		for (Wall wall : walls) {
 			mScratch.set(mRect);
 			if (mScratch.intersect(wall.rect())) {
 				if (mScratch.width() < mScratch.height()) {
@@ -88,9 +86,13 @@ public class Robo {
 		}
 	}
 	
-	public void avoidStatic(LinkedList<Wall> mAllWalls) {
-		// TODO Auto-generated method stub
-		
+	void getHits(LinkedList<Wall> walls, LinkedList<Wall> hits) {
+		for (Wall wall : walls) {
+			mScratch.set(mRect);
+			if (mScratch.intersect(wall.rect())) {
+				hits.add(wall);
+			}
+		}
 	}
 
 	public void move() {
@@ -125,7 +127,7 @@ public class Robo {
 	public Rect rect() {
 		return mRect;
 	}
-	
+
 	public boolean intersects(int x, int y) {
 		mScratch.left = x;
 		mScratch.top = y;
@@ -159,7 +161,7 @@ public class Robo {
 	private HealthBar mBar;
 	// Abs value of the guys velocity.
 	private final double mABSV = 15;
-	
+
 	/**  For audio.*/
 	private MediaPlayer mBombPlayer;
 	private boolean  mHasPlayed = false;
