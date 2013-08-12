@@ -9,7 +9,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
-import android.util.Log;
 
 public class Robo {
 	private static int INIT_X = 200;
@@ -21,8 +20,8 @@ public class Robo {
 		mAngle = 0;
 		mSprite = new AtlasSprite(context, R.raw.robo, R.raw.robo_js);
 		mDSprite = new DeathExpSheet(context);
-		mRect.top = 200;
-		mRect.left = 200;
+		mRect.top = INIT_Y;
+		mRect.left = INIT_X;
 		mRect.right = mRect.left + mSprite.maxWidth();
 		mRect.bottom = mRect.top + mSprite.maxHeight();
 		mBar = new HealthBar(mHealth);

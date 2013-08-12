@@ -12,7 +12,7 @@ public class Wall {
 	public Wall(int x, int y, int w, int h) {
 		mPaint = new Paint();
 		mPaint.setAntiAlias(true);
-		mPaint.setARGB(255, CR, CG, 0);
+		mPaint.setARGB(255, CR, CG, CB);
 		mRect = new Rect(x, y, x + w, y + h);
 	}
 	
